@@ -1,40 +1,45 @@
-const express = require('express')
-const jwt = require('jsonwebtoken')
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+const Collection = require("./Schema/Collection");
+const app = express();
 
+const dbURI =
+  "mongodb+srv://whymalick:2QzpmO5t2dIBSDEG@express-quiz.f2vxa62.mongodb.net/quiz?retryWrites=true&w=majority&appName=express-quiz";
 
-const app = express()
+app.use(express.json());
+mongoose
+  .connect(dbURI)
+  .then((result) => {
+    console.log("Connected to db");
+    app.listen(3000, (error) => {
+      if (error) console.log("Error connecting to server");
+      else {
+        console.log("Listening on port 3000");
+      }
+    });
+  })
+  .catch((err) => {
+    console.log("There's an connection err");
+  });
 
-const collections = [
-  {
-    title: "Title 1",
-    category: "History",
-    numOfQuestions: 9,
-  },
-  {
-    title: "Title 2",
-    category: "Math",
-    numOfQuestions: 5,
-  },
-  {
-    title: "Title 3",
-    category: "Science",
-    numOfQuestions: 8,
-  }
-];
+app.post("/add-collection", (req, res) => {
+  const collectionSet = req.body;
 
-app.get("/all-collections", (req, res)=> {
+  const newCollectionSet = new Collection( collectionSet );
 
-    return res.json(collections)
-})
+  newCollectionSet
+    .save()
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((err) => console.log(err));
+});
 
-
-
-
-app.listen(3000, (error)=> {
-    if(error) console.log("Error connecting to server");
-    else {
-    console.log("Listening on port 3000");
-
-    }
-    
-})
+app.get("/collections", (req, res) => {
+  Collection.find()
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((err) => console.log(err));
+});
